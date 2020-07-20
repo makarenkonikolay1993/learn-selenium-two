@@ -1,4 +1,8 @@
 import org.openqa.selenium.*;
+import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.Select;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.annotations.Test;
 
 import java.util.*;
@@ -122,14 +126,14 @@ public class TestSite extends TestBase {
 
         List<WebElement> countryNames = driver.findElements(By.cssSelector(".dataTable tr.row td:nth-of-type(5)"));
         List<String> notSortedNames = new ArrayList<String>();
-        List<String> sortedNames = new ArrayList<String>();
         for (WebElement el : countryNames) {
             notSortedNames.add(el.getText());
         }
+        List<String> sortedNames = new ArrayList<String>(notSortedNames);
 
-        for (String s : notSortedNames) {
-            sortedNames.add(s);
-        }
+//        for (String s : notSortedNames) {
+//            sortedNames.add(s);
+//        }
 
         Collections.sort(sortedNames);
 
@@ -281,6 +285,129 @@ public class TestSite extends TestBase {
         assertThat(color).isEqualTo(colorOnPage);
     }
 
+
+    @Test
+    public void registrationAndLogoutCheck() {
+        int rnd = new Random().nextInt(10000);
+        String firstName = "firstName" + rnd;
+        String lastName = "lastName" + rnd;
+
+        String address1 = "address1" + rnd;
+        String postcode = "49000";
+        String city = "city";
+        String email = "email" + rnd + "@gmail.com";
+        String phoneNumber = "+380955050500";
+        String password = "qwerty";
+
+        driver.navigate().to("http://localhost/litecart/");
+        WebElement registrBtn = driver.findElement(By.cssSelector("form a"));
+        registrBtn.click();
+
+        List<WebElement> forms = driver.findElements(By.cssSelector("#create-account table tr"));
+        forms.get(1).findElement(By.cssSelector("td:nth-of-type(1) input")).sendKeys(firstName);
+        forms.get(1).findElement(By.cssSelector("td:nth-of-type(2) input")).sendKeys(lastName);
+        forms.get(2).findElement(By.cssSelector("td:nth-of-type(1) input")).sendKeys(address1);
+        forms.get(3).findElement(By.cssSelector("td:nth-of-type(1) input")).sendKeys(postcode);
+        forms.get(3).findElement(By.cssSelector("td:nth-of-type(2) input")).sendKeys(city);
+        forms.get(5).findElement(By.cssSelector("td:nth-of-type(1) input")).sendKeys(email);
+        forms.get(5).findElement(By.cssSelector("td:nth-of-type(2) input")).sendKeys(phoneNumber);
+        forms.get(7).findElement(By.cssSelector("td:nth-of-type(1) input")).sendKeys(password);
+        forms.get(7).findElement(By.cssSelector("td:nth-of-type(2) input")).sendKeys(password);
+        forms.get(8).findElement(By.cssSelector("td button")).click();
+
+        WebDriverWait wait = new WebDriverWait(driver, 5);
+
+        wait.until(ExpectedConditions.visibilityOf(driver.findElement(By.cssSelector("#box-account li a[href *= logout]"))));
+
+        boolean logoutBtn = elementIsPresent(driver, By.cssSelector("#box-account li a[href *= logout]"));
+        assertThat(logoutBtn).isTrue();
+        driver.findElement(By.cssSelector("#box-account li a[href *= logout]")).click();
+        List<WebElement> formsLogin = driver.findElements(By.cssSelector("#box-account-login table input"));
+        formsLogin.get(0).sendKeys(email);
+        formsLogin.get(1).sendKeys(password);
+        driver.findElement(By.cssSelector("#box-account-login button[name=login]")).click();
+        boolean logoutBtn2 = elementIsPresent(driver, By.cssSelector("#box-account li a[href *= logout]"));
+        assertThat(logoutBtn2).isTrue();
+    }
+
+    @Test
+    public void newProductAddInAdminCheck() {
+        int rnd = new Random().nextInt(10000);
+        driver.navigate().to("http://localhost/litecart/admin");
+
+        WebElement loginForm = driver.findElement(By.cssSelector("#box-login"));
+        WebElement loginInput = loginForm.findElement(By.cssSelector("[data-type=text]"));
+        WebElement passwordInput = loginForm.findElement(By.cssSelector("[data-type=password]"));
+        WebElement loginBtn = loginForm.findElement(By.cssSelector("[value=Login]"));
+
+        loginInput.sendKeys("admin");
+        passwordInput.sendKeys("admin");
+        loginBtn.click();
+
+        assertThat(driver.getTitle()).isEqualTo("My Store");
+
+        WebElement catalog = driver.findElement(By.cssSelector("#box-apps-menu a[href *= catalog]"));
+        catalog.click();
+
+        WebElement newProductBtn = driver.findElement(By.cssSelector("#content a:nth-of-type(2)"));
+        newProductBtn.click();
+
+        List<WebElement> forms = driver.findElements(By.cssSelector("#tab-general tr"));
+
+        WebElement status = forms.get(0).findElement(By.cssSelector("label:nth-of-type(1)"));
+        status.click();
+
+        WebElement productName = forms.get(1).findElement(By.cssSelector("input"));
+        productName.sendKeys("nameProduct" + rnd);
+
+        WebElement productCode = forms.get(2).findElement(By.cssSelector("input"));
+        productCode.sendKeys("codeProduct" + rnd);
+
+        //#tab-general input[name='product_groups[]']
+
+        WebElement productGroup = forms.get(6).findElement(By.xpath("(//input[@name='product_groups[]'])[3]"));
+        productGroup.click();
+
+        WebElement productQuantity = forms.get(7).findElement(By.xpath("//input[@name='quantity']"));
+        productQuantity.clear();
+        productQuantity.sendKeys("20,00");
+
+        WebElement informationTab = driver.findElement(By.cssSelector("ul.index a[href *= information]"));
+        informationTab.click();
+
+        WebElement manufacturerSelect = driver.findElement(By.cssSelector("#tab-information select[name=manufacturer_id]"));
+
+        Select select = new Select(manufacturerSelect);
+        select.selectByValue("1");
+
+
+        WebElement keywords = driver.findElement(By.cssSelector("input[name=keywords]"));
+        keywords.sendKeys("keywords" + rnd);
+
+        WebElement shortDescr = driver.findElement(By.cssSelector("input[name='short_description[en]']"));
+        shortDescr.sendKeys("short Description" + rnd);
+
+        WebElement headTitle = driver.findElement(By.cssSelector("input[name='head_title[en]']"));
+        headTitle.sendKeys("head Title" + rnd);
+
+        WebElement pricesTab = driver.findElement(By.cssSelector("a[href *= prices]"));
+        pricesTab.click();
+
+        WebElement purchasePrice = driver.findElement(By.cssSelector("input[name='purchase_price']"));
+        purchasePrice.clear();
+        purchasePrice.sendKeys("10");
+
+
+
+        WebElement saveButton = driver.findElement(By.cssSelector(".button-set button:nth-of-type(1)"));
+        saveButton.click();
+
+
+        boolean checkProductAdd = elementIsPresent(driver, By.xpath("//a[contains(text(), 'nameProduct" + rnd + "')]"));
+
+
+        assertThat(checkProductAdd).isTrue();
+    }
 
     public boolean elementIsPresent(WebDriver driver, By locator) {
         try {

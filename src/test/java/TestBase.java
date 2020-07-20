@@ -25,8 +25,8 @@ public class TestBase {
         driver = DriverSingleton.getDriver();
     }
 
-    @AfterMethod
-    public void tearDown() {
-        driver.quit();
-    }
+//    @AfterMethod
+//    public void tearDown() {
+//        driver.quit();
+//    }
 }
