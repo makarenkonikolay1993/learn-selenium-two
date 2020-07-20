@@ -402,9 +402,7 @@ public class TestSite extends TestBase {
         WebElement saveButton = driver.findElement(By.cssSelector(".button-set button:nth-of-type(1)"));
         saveButton.click();
 
-
         boolean checkProductAdd = elementIsPresent(driver, By.xpath("//a[contains(text(), 'nameProduct" + rnd + "')]"));
-
 
         assertThat(checkProductAdd).isTrue();
     }
