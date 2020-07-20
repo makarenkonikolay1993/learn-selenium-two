@@ -395,7 +395,11 @@ public class TestSite extends TestBase {
 
         WebElement purchasePrice = driver.findElement(By.cssSelector("input[name='purchase_price']"));
         purchasePrice.clear();
-        purchasePrice.sendKeys("10");
+        purchasePrice.sendKeys("20");
+
+        WebElement purchasePrice2 = driver.findElement(By.cssSelector("input[data-type='currency'"));
+        purchasePrice2.clear();
+        purchasePrice2.sendKeys("20");
 
 
 
